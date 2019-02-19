@@ -79,6 +79,9 @@ for doc in docs_to_be_removed_list:
     collection.delete_one(doc)
     docs_removed += 1
     print("documents is cleaning, %d in %d" % (docs_removed, count))
-print("------------------------------------------------------------------------------------------------------------")
-print("%d documents earlier than %s has been removed in collection %s" % (docs_removed, otherStyleTime, collection.name))
-print("%d files was deleted, %d files was not found" % (files_removed, files_not_found.__len__()))
+
+with open("./mongo_ops.log", "w+") as f:
+    f.write("------------------------------------------------------------------------------------------------------------\n")
+    f.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    f.write("%d documents earlier than %s has been removed in collection %s.\n" % (docs_removed, otherStyleTime, collection.name))
+    f.write("%d files was deleted, %d files was not found.\n" % (files_removed, files_not_found.__len__()))
