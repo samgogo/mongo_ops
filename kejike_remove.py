@@ -68,7 +68,7 @@ for file in files_to_be_removed:
     try:
         os.remove(pic_path)
         files_removed += 1
-        print("%s was deleted. %d in %d" % (pic_path, files_removed, files_to_be_removed))
+        print("%s was deleted. %d in %d" % (pic_path, files_removed, files_to_be_removed.__len__()))
     except IOError:
         print("Error: can\'t find file or read data")
 print("%d files was deleted" % files_removed)
