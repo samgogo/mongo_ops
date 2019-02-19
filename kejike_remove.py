@@ -47,13 +47,13 @@ for doc in docs_to_be_removed:
         if pic in doc:
             pic_path = root + '/' + doc[pic]
             if os.path.exists(pic_path):
-                files_to_be_removed += pic_path
+                files_to_be_removed += [pic_path]
             else:
                 print("%s was not found" % pic_path)
 
         else:
             print('was not found')
-print(files_to_be_removed)
+pprint.pprint(files_to_be_removed)
 #    collection.delete_one(doc)
 
 #  print("%d documents removed in %s" % (result, collection.name))
