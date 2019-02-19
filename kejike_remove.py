@@ -66,9 +66,9 @@ for doc in docs_to_be_removed:
 files_removed = 0
 for file in files_to_be_removed:
     try:
-        os.remove(pic_path)
+        os.remove(file)
         files_removed += 1
-        print("%s was deleted. %d in %d" % (pic_path, files_removed, files_to_be_removed.__len__()))
+        print("%s was deleted. %d in %d" % (file, files_removed, files_to_be_removed.__len__()))
     except IOError:
         print("Error: can\'t find file or read data")
 print("%d files was deleted" % files_removed)
