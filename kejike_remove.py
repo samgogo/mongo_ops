@@ -13,20 +13,22 @@ if user.strip() == "":
 else:
     uri = "mongodb://%s:%s@%s:%s" % (user, password, host, port)
 
-numMonthes = 8    # how many months to keep
+numMonthes = 8  # how many months to keep
 dbs = 'face'
 collections = 'passerby_copy'
 
 files_to_be_removed = []
 files_not_found = []
-docs_to_be_removed_list = []
+docs_to_be_removed_id = []
 root = '/mnt/mfs/projectCAM/face'
 
+
 def time_keep(numMonthes):
-    now = int(time.time())    # current time
-    oneMonth = 60 * 60 * 24 * 30    # timestamps in one month
+    now = int(time.time())  # current time
+    oneMonth = 60 * 60 * 24 * 30  # timestamps in one month
     t = now - numMonthes * oneMonth
     return t
+
 
 def get_collection():
     client = MongoClient(uri)
@@ -34,10 +36,11 @@ def get_collection():
     collection = db[collections]
     return collection
 
+
 # remove the data before this time
-timeKeep = time_keep(numMonthes)          # timestamp
+timeKeep = time_keep(numMonthes)  # timestamp
 dateArray = datetime.datetime.fromtimestamp(timeKeep)
-otherStyleTime = dateArray.strftime("%Y-%m-%d %H:%M:%S") # datetime
+otherStyleTime = dateArray.strftime("%Y-%m-%d %H:%M:%S")  # datetime
 
 # get the collection
 collection = get_collection()
@@ -50,8 +53,11 @@ print("start cleaning collection...")
 print("%d documents earlier than %s will be removed in collection %s" % (count, otherStyleTime, collection.name))
 
 # gather files' paths
+n = 0
 for doc in docs_to_be_removed:
-    docs_to_be_removed_list += [doc]
+    docs_to_be_removed_id += [doc["_id"]]
+    n += 1
+    print("Loaded %d documents. Total %s." % (n, count))
     for pic in pics_to_be_removed:
         if pic in doc:
             pic_path = root + '/' + doc[pic]
@@ -75,13 +81,13 @@ print("%d files was deleted" % files_removed)
 
 # remove documents
 docs_removed = 0
-for doc in docs_to_be_removed_list:
-    collection.delete_one(doc)
+for doc_id in docs_to_be_removed_id:
+    collection.delete_one({"_id": doc_id})
     docs_removed += 1
     print("documents is cleaning, %d in %d" % (docs_removed, count))
 
-with open("./mongo_ops.log", "w+") as f:
-    f.write("------------------------------------------------------------------------------------------------------------\n")
-    f.write(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    f.write("%d documents earlier than %s has been removed in collection %s.\n" % (docs_removed, otherStyleTime, collection.name))
-    f.write("%d files was deleted, %d files was not found.\n" % (files_removed, files_not_found.__len__()))
+print("------------------------------------------------------------------------------------------------------------\n")
+print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+print("%d documents earlier than %s has been removed in collection %s.\n" % (
+docs_removed, otherStyleTime, collection.name))
+print("%d files was deleted, %d files was not found.\n" % (files_removed, files_not_found.__len__()))
