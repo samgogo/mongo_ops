@@ -16,6 +16,7 @@ else:
 numMonthes = 8  # how many months to keep
 dbs = 'face'
 collections = 'passerby_copy'
+pics_to_be_removed = ['back_pic_src', 'face_pic_src', 'show_pic_src']
 
 files_to_be_removed = []
 files_not_found = []
@@ -36,7 +37,6 @@ def get_collection():
     collection = db[collections]
     return collection
 
-
 # remove the data before this time
 timeKeep = time_keep(numMonthes)  # timestamp
 dateArray = datetime.datetime.fromtimestamp(timeKeep)
@@ -47,47 +47,24 @@ collection = get_collection()
 count = collection.count_documents({'create_time': {"$lt": timeKeep}})
 
 docs_to_be_removed = collection.find({'create_time': {"$lt": timeKeep}})
-pics_to_be_removed = ['back_pic_src', 'face_pic_src', 'show_pic_src']
 
-print("start cleaning collection...")
-print("%d documents earlier than %s will be removed in collection %s" % (count, otherStyleTime, collection.name))
-
-# gather files' paths
-n = 0
-for doc in docs_to_be_removed:
-    docs_to_be_removed_id += [doc["_id"]]
-    n += 1
-    print("Loaded %d documents. Total %s." % (n, count))
-    for pic in pics_to_be_removed:
-        if pic in doc:
-            pic_path = root + '/' + doc[pic]
-            if os.path.exists(pic_path):
-                files_to_be_removed += [pic_path]
-            else:
-                files_not_found += [pic_path]
-        else:
-            print('was not found')
-
-# remove files
+# remove file
 files_removed = 0
-for file in files_to_be_removed:
-    try:
-        os.remove(file)
-        files_removed += 1
-        print("%s was deleted. %d in %d" % (file, files_removed, files_to_be_removed.__len__()))
-    except IOError:
-        print("Error: can\'t find file or read data")
-print("%d files was deleted" % files_removed)
-
-# remove documents
 docs_removed = 0
-for doc_id in docs_to_be_removed_id:
-    collection.delete_one({"_id": doc_id})
+for doc in docs_to_be_removed:
+    for pic in pics_to_be_removed:
+        pic_path = root + '/' + doc[pic]
+        try:
+            os.remove(pic_path)
+            files_removed += 1
+            print("%s was deleted. %d in %d" % (pic_path, files_removed, count * 3))
+        except IOError:
+            print("Error: can\'t find file or read data")
+    collection.delete_one(doc)
     docs_removed += 1
-    print("documents is cleaning, %d in %d" % (docs_removed, count))
+    print("One document was deleted. %d in %d" % (docs_removed, count))
 
 print("------------------------------------------------------------------------------------------------------------\n")
 print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-print("%d documents earlier than %s has been removed in collection %s.\n" % (
-docs_removed, otherStyleTime, collection.name))
+print("%d documents earlier than %s has been removed in collection %s.\n" % (docs_removed, otherStyleTime, collection.name))
 print("%d files was deleted, %d files was not found.\n" % (files_removed, files_not_found.__len__()))
